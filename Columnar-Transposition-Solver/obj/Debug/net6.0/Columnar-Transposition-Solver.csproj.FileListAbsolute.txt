@@ -1,0 +1,15 @@
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\bin\Debug\net6.0\Columnar-Transposition-Solver.exe
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\bin\Debug\net6.0\Columnar-Transposition-Solver.deps.json
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\bin\Debug\net6.0\Columnar-Transposition-Solver.runtimeconfig.json
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\bin\Debug\net6.0\Columnar-Transposition-Solver.dll
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\bin\Debug\net6.0\Columnar-Transposition-Solver.pdb
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.csproj.AssemblyReference.cache
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.AssemblyInfoInputs.cache
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.AssemblyInfo.cs
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.csproj.CoreCompileInputs.cache
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.dll
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\refint\Columnar-Transposition-Solver.dll
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.pdb
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\Columnar-Transposition-Solver.genruntimeconfig.cache
+C:\Users\olive\Documents\GitHub\Columnar-Transposition-Solver\Columnar-Transposition-Solver\obj\Debug\net6.0\ref\Columnar-Transposition-Solver.dll

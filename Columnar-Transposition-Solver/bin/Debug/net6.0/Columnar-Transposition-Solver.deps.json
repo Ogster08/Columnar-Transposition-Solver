@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "Columnar-Transposition-Solver/1.0.0": {
+        "runtime": {
+          "Columnar-Transposition-Solver.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Columnar-Transposition-Solver/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
