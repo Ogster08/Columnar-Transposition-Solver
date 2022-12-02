@@ -2,67 +2,27 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
+using System.Threading;
 
 namespace Columnar_Transposition_Solver
 {
-	class Program
-	{
-		public static void Main(string[] args)
-		{
-			Ngrams ngrams = new Ngrams("english_quadgrams.txt");
+    class Program
+    {
+        public static void Main(string[] args)
+        {
 
-			Console.Write("Enter cipher text: ");
-			string text = Console.ReadLine().ToLower();
-			List<string> texts = new();
+            Console.Write("Enter cipher text: ");
+            string text = Console.ReadLine().ToLower();
+            List<string> texts = new();
 
-			for (int keyLength = 2; 9 >= keyLength; keyLength++)
-			{
-                List<Tuple<string, Double>> scores = new List<Tuple<string, double>>();
-				int length = Convert.ToInt32(Math.Ceiling(text.Length / Convert.ToDouble(keyLength)));
-
-                char[,] TextArray = new char[length, keyLength];
-				for (int i = 0; i < text.Length; i++)
-				{
-					TextArray[i/keyLength,i%keyLength] = text[i];
-				}
-
-                for (int i = 0; i < TextArray.GetLength(0); i++)
-                {
-                    char[] thing = new char[TextArray.GetLength(1)];
-                    for (int j = 0; j < TextArray.GetLength(1); j++)
-                    {
-                        thing[j] = TextArray[i, j];
-                    }
-                }
-                List<char[]> slices = TextArray.Slices();
-
-
-                int[] ArrayForPermutations = new int[keyLength];
-                for (int i = 0; i < ArrayForPermutations.Length; i++)
-                {
-                    ArrayForPermutations[i] = i;
-                }
-
-                IList < IList<int> > permutations = Permute(ArrayForPermutations);
-
-                foreach (IList<int> item in permutations)
-                {
-                    StringBuilder possibleString = new StringBuilder();
-                    foreach (int num in item)
-                    {
-                        possibleString.Append(slices[num]);
-                    }
-                    scores.Add(new Tuple<string, Double>(possibleString.ToString(), ngrams.score(possibleString.ToString())));
-                }
-
-                if (keyLength == 5)
-                {
-
-                }
-
-                Console.WriteLine(scores.MaxBy(t => t.Item2));
+            for (int keyLength = 2; 9 >= keyLength; keyLength++)
+            {
+                object arg = new object[2] { text, keyLength };
+                var T = new Thread(solve);
+                T.Start(arg);
             }
-		}
+        }
 
         static IList<IList<int>> Permute(int[] nums)
         {
@@ -74,8 +34,6 @@ namespace Columnar_Transposition_Solver
         {
             if (start == end)
             {
-                // We have one of our possible n! solutions,
-                // add it to the list.
                 list.Add(new List<int>(nums));
             }
             else
@@ -97,27 +55,35 @@ namespace Columnar_Transposition_Solver
             a = b;
             b = temp;
         }
-    }
 
-    static class Ext
-    {
-        public static List<T[]> Slices<T>(this T[,] array)
+        static void solve(Object args)
         {
-            List<T[]> list = new List<T[]>();
-            for (int j = 0; j < array.GetLength(1); j++)
+            Array argArray = (Array)args;
+            string text = (string)argArray.GetValue(0);
+            int keyLength = (int)argArray.GetValue(1);
+            Ngrams ngrams = new Ngrams("english_quadgrams.txt");
+            List<Tuple<string, Double>> scores = new List<Tuple<string, double>>();
+            int length = Convert.ToInt32(Math.Ceiling(text.Length / Convert.ToDouble(keyLength)));
+
+            int[] ArrayForPermutations = new int[keyLength];
+            for (int i = 0; i < ArrayForPermutations.Length; i++) { ArrayForPermutations[i] = i; }
+
+            IList<IList<int>> permutations = Permute(ArrayForPermutations);
+
+            foreach (IList<int> permutation in permutations)
             {
-                T[] newArray = new T[array.GetLength(0)];
-                for (int i = 0; i < array.GetLength(0); i++)
+                StringBuilder possibleString = new StringBuilder();
+                for (int firstD = 0; firstD < text.Length; firstD+=keyLength)
                 {
-                    newArray[i] = array[i, j];
+                    for (int secondD = 0; secondD < keyLength; secondD++)
+                    {
+                        if (firstD + permutation[secondD] >= text.Length){ break; }
+                        possibleString.Append(text[firstD+permutation[secondD]]);
+                    }
                 }
-
-                list.Add(newArray);
+                scores.Add(new Tuple<string, Double>(possibleString.ToString(), ngrams.score(possibleString.ToString())));
             }
-            return list;
+            Console.WriteLine(scores.MaxBy(t => t.Item2));
         }
-
-
-
     }
 }
