@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\olive\\Documents\\GitHub\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj": {}
+    "C:\\Users\\olive\\source\\repos\\Ogster08\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj": {}
   },
   "projects": {
-    "C:\\Users\\olive\\Documents\\GitHub\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj": {
+    "C:\\Users\\olive\\source\\repos\\Ogster08\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\olive\\Documents\\GitHub\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj",
+        "projectUniqueName": "C:\\Users\\olive\\source\\repos\\Ogster08\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj",
         "projectName": "Columnar-Transposition-Solver",
-        "projectPath": "C:\\Users\\olive\\Documents\\GitHub\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj",
+        "projectPath": "C:\\Users\\olive\\source\\repos\\Ogster08\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver.csproj",
         "packagesPath": "C:\\Users\\olive\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\olive\\Documents\\GitHub\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\obj\\",
+        "outputPath": "C:\\Users\\olive\\source\\repos\\Ogster08\\Columnar-Transposition-Solver\\Columnar-Transposition-Solver\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -38,7 +38,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net6.0": {
@@ -59,7 +65,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.402\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301\\RuntimeIdentifierGraph.json"
         }
       }
     }
