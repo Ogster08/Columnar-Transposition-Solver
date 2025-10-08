@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 using System.Threading;
+using static System.Formats.Asn1.AsnWriter;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Columnar_Transposition_Solver
 {
@@ -16,108 +18,152 @@ namespace Columnar_Transposition_Solver
         {
             Console.Write("Enter cipher text: ");
             string text = Console.ReadLine().ToLower();
+
+            // scores for each quadgram
             double[] scoresUsingInt = InitiliseNgramsScorer();
 
-
-            for (int keyLength = 2; 9 >= keyLength; keyLength++)
+            // run each key length on a different thread
+            /*for (int keyLength = 2; 9 >= keyLength; keyLength++)
             {
                 object arg = new object[3] { text, keyLength, scoresUsingInt };
                 var T = new Thread(solve);
                 T.Start(arg);
-            }
-        }
+            }*/
 
-        static IList<IList<int>> Permute(int[] nums)
-        {
-            var list = new List<IList<int>>();
-            return DoPermute(nums, 0, nums.Length - 1, list);
-        }
-
-        static IList<IList<int>> DoPermute(int[] nums, int start, int end, IList<IList<int>> list)
-        {
-            if (start == end)
+            Parallel.For(2, 10, keyLength =>
             {
-                list.Add(new List<int>(nums));
-            }
-            else
-            {
-                for (var i = start; i <= end; i++)
-                {
-                    Swap(ref nums[start], ref nums[i]);
-                    DoPermute(nums, start + 1, end, list);
-                    Swap(ref nums[start], ref nums[i]);
-                }
-            }
-
-            return list;
-        }
-
-        static void Swap(ref int a, ref int b)
-        {
-            var temp = a;
-            a = b;
-            b = temp;
+                solve(new object[] { text, keyLength, scoresUsingInt });
+            });
         }
 
         static void solve(Object args)
         {
+            // getting passed arguements
             Array argArray = (Array)args;
             string text = (string)argArray.GetValue(0);
             int keyLength = (int)argArray.GetValue(1);
             double[] scoresUsingInt = (double[])argArray.GetValue(2);
-            List<Tuple<IList<int>, Double>> scores = new List<Tuple<IList<int>, double>>();
-            int length = Convert.ToInt32(Math.Ceiling(text.Length / Convert.ToDouble(keyLength)));
 
-            int[] ArrayForPermutations = new int[keyLength];
-            for (int i = 0; i < ArrayForPermutations.Length; i++) { ArrayForPermutations[i] = i; }
+            int textLength = text.Length;
+            int rowCount = (textLength + keyLength - 1) / keyLength;
 
-            IList<IList<int>> permutations = Permute(ArrayForPermutations);
+            // precomputing row lengths and start indices for flattening the rows and columns later
+            Span<int> rowLengths = stackalloc int[rowCount];
+            Span<int> rowStarts = stackalloc int[rowCount];
+            Span<int> flattenedPermutedTextIndices = stackalloc int[textLength];
 
-            foreach (IList<int> permutation in permutations)
+            for (int row = 0; row < rowCount; row++)
             {
-                char[] buffer = new char[4];
-                bool bufferFull = false;
-                double score = 0;
-                int encoded = 0;
-                int mask = (1 << 15) - 1;
+                rowStarts[row] = row * keyLength;
+                rowLengths[row] = Math.Min(keyLength, textLength - rowStarts[row]);
+            }
 
-                for (int firstD = 0; firstD < text.Length; firstD+=keyLength)
+            // setting variables for the scoring
+            double bestScore = -999999;
+            int[] bestPermutation = new int[keyLength];
+            int mask = (1 << 15) - 1;
+
+            // setting initial permutation
+            Span<int> permutation = stackalloc int[keyLength];
+            for (int i = 0; i < keyLength; i++) { permutation[i] = i; }
+
+            // Heap's algorithm counters
+            Span<int> c = stackalloc int[keyLength];
+            int depth = 0;
+
+            //Start of Heap's Algorithm in a non-recursive format (generating different permutations of the key)
+
+
+            // Scoring for initial permutation
+
+            // gets the indeces in the cipher text for each position in the decryption
+            int index = 0;
+            for (int row = 0; row < rowCount; row++)
+            {
+                int startIndex = rowStarts[row];
+                int rowSize = rowLengths[row];
+                for (int col = 0; col < rowSize; col++)
                 {
-                    for (int secondD = 0; secondD < keyLength; secondD++)
+                    int colPerm = permutation[col];
+                    if (colPerm >= rowSize) continue;
+                    flattenedPermutedTextIndices[index++] = startIndex + colPerm;
+                }
+            }
+
+            double score = ScorePermutation(flattenedPermutedTextIndices[..index], text, scoresUsingInt, mask);
+
+            // save the score and key if it is the best so far
+            if (score > bestScore)
+            {
+                bestScore = score;
+                permutation.CopyTo(bestPermutation);
+            }
+
+            // main loop for Heap's alogrithm
+            while (depth < keyLength)
+            {
+                if (c[depth] < depth)
+                {
+                    // do swaps
+                    if (depth % 2 == 0) Swap(ref permutation[0], ref permutation[depth]);
+                    else Swap(ref permutation[c[depth]], ref permutation[depth]);
+
+                    //scoring for current permutation
+
+                    // gets the indeces in the cipher text for each position in the decryption
+                    index = 0;
+                    for (int row = 0; row < rowCount; row++)
                     {
-                        if (firstD + permutation[secondD] >= text.Length){ break; }
-                        if (!bufferFull)
+                        int startIndex = rowStarts[row];
+                        int rowSize = rowLengths[row];
+                        for (int col = 0; col < rowSize; col++)
                         {
-                            int index = firstD + permutation[secondD];
-                            char c = text[index];
-                            buffer[firstD + secondD] = text[firstD + permutation[secondD]];
-                            if (firstD + secondD >= 3)
-                            {
-                                bufferFull = true;
-                                encoded = EncodeLower(buffer);
-                                score += scoresUsingInt[encoded];
-                            }
-                        }
-                        else
-                        {
-                            encoded = ((encoded & mask) << 5) | (text[firstD + permutation[secondD]] - 'a');
-                            score += scoresUsingInt[encoded];
+                            int colPerm = permutation[col];
+                            if (colPerm >= rowSize) continue;
+                            flattenedPermutedTextIndices[index++] = startIndex + colPerm;
                         }
                     }
+
+                    score = ScorePermutation(flattenedPermutedTextIndices[..index], text, scoresUsingInt, mask);
+
+                    // save the score and key if it is the best so far
+                    if (score > bestScore)
+                    {
+                        bestScore = score;
+                        permutation.CopyTo(bestPermutation);
+                    }
+
+                    // increment and reset counters
+                    c[depth]++;
+                    depth = 0;
                 }
-                scores.Add(new Tuple<IList<int>, Double>(permutation, score));
+                else
+                {
+                    // increment and reset counters
+                    c[depth] = 0;
+                    depth++;
+                }
             }
-            Console.WriteLine(scores.MaxBy(t => t.Item2) + " " + keyLength.ToString());
+
+            // decrypt cipher text with the best key
+            StringBuilder sb = new StringBuilder();
+            for (int row = 0; row < text.Length; row += keyLength)
+            {
+                for (int col = 0; col < keyLength; col++)
+                {
+                    if (row + bestPermutation[col] >= text.Length) { break; }
+                    sb.Append(text[row + bestPermutation[col]]);
+
+                }
+            }
+
+            // output best possible decryption
+            Console.WriteLine(string.Join(",", bestPermutation) + "  keyLength: " + keyLength.ToString() + " score: " + bestScore + " " + sb.ToString());
         }
 
-        private static int EncodeLower(ReadOnlySpan<char> gram)
+        public static IEnumerable<int[]> GetPermutations(int[] Permute, int n)
         {
-            int value = 0;
-            foreach (char c in gram)
-            {
-                value = (value << 5) | (c - 'a');
-            }
-            return value;
+            if (n == 1) yield return Permute;
         }
 
         private static int EncodeUpper(ReadOnlySpan<char> gram)
@@ -154,6 +200,42 @@ namespace Columnar_Transposition_Solver
             }
 
             return scoresUsingInt;
+        }
+
+        // table to convert chars to integers for scoring
+        static readonly byte[] CharToIntTable = CreateCharToIntTable();
+        private static byte[] CreateCharToIntTable()
+        {
+            byte[] table = new byte[256];
+            for (char c = 'a'; c <= 'z'; c++) { table[c] = (byte)(c - 'a'); }
+            return table;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static double ScorePermutation(ReadOnlySpan<int> flatIndex, string text, double[] scores, int mask)
+        {
+            // initial score for the first quadgram
+            double score = 0;
+            int encoded = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                encoded = (encoded << 5) | CharToIntTable[text[flatIndex[i]]];
+            }
+
+            // using rolling encoding to only have to change 1 char each iteration
+            for (int i = 4; i < flatIndex.Length; i++)
+            {
+                encoded = ((encoded & mask) << 5) | (CharToIntTable[text[flatIndex[i]]]);
+                score += scores[encoded];
+            }
+
+            return score;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Swap(ref int a, ref int b)
+        {
+            (a, b) = (b, a);
         }
     }
 }
