@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Columnar-Transposition-Solver")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+42f493513c2552e2f8f5ce427f82d5aa4e164c6b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5e21c71a7b0296756a5f76319be6d8342e13e19a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Columnar-Transposition-Solver")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Columnar-Transposition-Solver")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

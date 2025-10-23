@@ -34,6 +34,8 @@ namespace Columnar_Transposition_Solver
             {
                 solve(new object[] { text, keyLength, scoresUsingInt });
             });
+
+            Console.ReadLine();
         }
 
         static void solve(Object args)
@@ -48,9 +50,9 @@ namespace Columnar_Transposition_Solver
             int rowCount = (textLength + keyLength - 1) / keyLength;
 
             // precomputing row lengths and start indices for flattening the rows and columns later
-            Span<int> rowLengths = stackalloc int[rowCount];
-            Span<int> rowStarts = stackalloc int[rowCount];
-            Span<int> flattenedPermutedTextIndices = stackalloc int[textLength];
+            int[] rowLengths = new int[rowCount];
+            int[] rowStarts = new int[rowCount];
+            int[] flattenedPermutedTextIndices = new int[textLength];
 
             for (int row = 0; row < rowCount; row++)
             {
@@ -64,86 +66,37 @@ namespace Columnar_Transposition_Solver
             int mask = (1 << 15) - 1;
 
             // setting initial permutation
-            Span<int> permutation = stackalloc int[keyLength];
+            int[] permutation = new int[keyLength];
             for (int i = 0; i < keyLength; i++) { permutation[i] = i; }
 
-            // Heap's algorithm counters
-            Span<int> c = stackalloc int[keyLength];
-            int depth = 0;
-
-            //Start of Heap's Algorithm in a non-recursive format (generating different permutations of the key)
-
-
-            // Scoring for initial permutation
-
-            // gets the indeces in the cipher text for each position in the decryption
-            int index = 0;
-            for (int row = 0; row < rowCount; row++)
+            // Tty every permutation of the key
+            GetPermutations(permutation, keyLength, (permute) =>
             {
-                int startIndex = rowStarts[row];
-                int rowSize = rowLengths[row];
-                for (int col = 0; col < rowSize; col++)
+                // Scoring permutation
+
+                // gets the indeces in the cipher text for each position in the decryption
+                int index = 0;
+                for (int row = 0; row < rowCount; row++)
                 {
-                    int colPerm = permutation[col];
-                    if (colPerm >= rowSize) continue;
-                    flattenedPermutedTextIndices[index++] = startIndex + colPerm;
-                }
-            }
-
-            double score = ScorePermutation(flattenedPermutedTextIndices[..index], text, scoresUsingInt, mask);
-
-            // save the score and key if it is the best so far
-            if (score > bestScore)
-            {
-                bestScore = score;
-                permutation.CopyTo(bestPermutation);
-            }
-
-            // main loop for Heap's alogrithm
-            while (depth < keyLength)
-            {
-                if (c[depth] < depth)
-                {
-                    // do swaps
-                    if (depth % 2 == 0) Swap(ref permutation[0], ref permutation[depth]);
-                    else Swap(ref permutation[c[depth]], ref permutation[depth]);
-
-                    //scoring for current permutation
-
-                    // gets the indeces in the cipher text for each position in the decryption
-                    index = 0;
-                    for (int row = 0; row < rowCount; row++)
+                    int startIndex = rowStarts[row];
+                    int rowSize = rowLengths[row];
+                    for (int col = 0; col < rowSize; col++)
                     {
-                        int startIndex = rowStarts[row];
-                        int rowSize = rowLengths[row];
-                        for (int col = 0; col < rowSize; col++)
-                        {
-                            int colPerm = permutation[col];
-                            if (colPerm >= rowSize) continue;
-                            flattenedPermutedTextIndices[index++] = startIndex + colPerm;
-                        }
+                        int colPerm = permutation[col];
+                        if (colPerm >= rowSize) continue;
+                        flattenedPermutedTextIndices[index++] = startIndex + colPerm;
                     }
-
-                    score = ScorePermutation(flattenedPermutedTextIndices[..index], text, scoresUsingInt, mask);
-
-                    // save the score and key if it is the best so far
-                    if (score > bestScore)
-                    {
-                        bestScore = score;
-                        permutation.CopyTo(bestPermutation);
-                    }
-
-                    // increment and reset counters
-                    c[depth]++;
-                    depth = 0;
                 }
-                else
+
+                double score = ScorePermutation(flattenedPermutedTextIndices[..index], text, scoresUsingInt, mask);
+
+                // save the score and key if it is the best so far
+                if (score > bestScore)
                 {
-                    // increment and reset counters
-                    c[depth] = 0;
-                    depth++;
+                    bestScore = score;
+                    Array.Copy(permutation, bestPermutation, keyLength);
                 }
-            }
+            });
 
             // decrypt cipher text with the best key
             StringBuilder sb = new StringBuilder();
@@ -151,7 +104,7 @@ namespace Columnar_Transposition_Solver
             {
                 for (int col = 0; col < keyLength; col++)
                 {
-                    if (row + bestPermutation[col] >= text.Length) { break; }
+                    if (row + bestPermutation[col] >= text.Length) { continue; }
                     sb.Append(text[row + bestPermutation[col]]);
 
                 }
@@ -161,9 +114,21 @@ namespace Columnar_Transposition_Solver
             Console.WriteLine(string.Join(",", bestPermutation) + "  keyLength: " + keyLength.ToString() + " score: " + bestScore + " " + sb.ToString());
         }
 
-        public static IEnumerable<int[]> GetPermutations(int[] Permute, int n)
+        private static void GetPermutations(int[] Permute, int n, Action<int[]> action)
         {
-            if (n == 1) yield return Permute;
+            if (n == 1)
+            {
+                action(Permute); 
+                return;
+            }
+
+            GetPermutations(Permute, n - 1, action);
+            for (int i = 0; i < n - 1; i++)
+            {
+                if (n % 2 == 0) (Permute[i], Permute[n - 1]) = (Permute[n - 1], Permute[i]);
+                else (Permute[0], Permute[n - 1]) = (Permute[n - 1], Permute[0]);
+                GetPermutations(Permute, n - 1, action);
+            }
         }
 
         private static int EncodeUpper(ReadOnlySpan<char> gram)
@@ -230,12 +195,6 @@ namespace Columnar_Transposition_Solver
             }
 
             return score;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Swap(ref int a, ref int b)
-        {
-            (a, b) = (b, a);
         }
     }
 }
