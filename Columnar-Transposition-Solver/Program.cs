@@ -23,13 +23,6 @@ namespace Columnar_Transposition_Solver
             double[] scoresUsingInt = InitiliseNgramsScorer();
 
             // run each key length on a different thread
-            /*for (int keyLength = 2; 9 >= keyLength; keyLength++)
-            {
-                object arg = new object[3] { text, keyLength, scoresUsingInt };
-                var T = new Thread(solve);
-                T.Start(arg);
-            }*/
-
             Parallel.For(2, 10, keyLength =>
             {
                 solve(new object[] { text, keyLength, scoresUsingInt });
